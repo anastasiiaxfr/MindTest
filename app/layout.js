@@ -22,6 +22,12 @@ export default function Layout({ children }) {
   return (
     <html lang="en">
       <head>
+        <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-NHN4TMXD" />
+        <script dangerouslySetInnerHTML={{
+          __html: `window.dataLayer = window.dataLayer || [];
+function gtag() { window.dataLayer.push(arguments); }
+gtag('js', new Date());`,
+        }} />
         <meta property="og:logo" content={absoluteUrl("/pwa/icon-512.png")} />
       </head>
       <body>{children}</body>
