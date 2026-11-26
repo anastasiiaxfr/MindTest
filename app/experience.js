@@ -1,13 +1,22 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {BrainCircuit, Grid2X2, Hourglass, Timer, ChevronLeft, Download, Copy, Check} from 'lucide-react';
+import {BrainCircuit, CalendarDays, Grid2X2, Hourglass, ListChecks, MessagesSquare, Timer, ChevronLeft, Download, Copy, Check} from 'lucide-react';
 import {tests, iq, memory, mental} from '../lib/tests.js';
 import Footer, {Brand} from './footer.js';
 import {describeFigure,iqQuestionVersion} from '../lib/iq-questions.js';
 
 const questions = {iq,memory,'mental-age':mental};
 const icons = {iq:BrainCircuit,memory:Grid2X2,'mental-age':Hourglass};
+const mentalAgeIcons = {Routine: CalendarDays, Planning: ListChecks, Reflection: MessagesSquare};
+const memoryShapes = {
+  '●': ['circle', 'filled circle'],
+  '▲': ['triangle', 'filled triangle'],
+  '◆': ['diamond', 'filled diamond'],
+  '◇': ['diamond', 'outlined diamond'],
+  '■': ['square', 'filled square'],
+  '✦': ['star', 'four-pointed star']
+};
 
 function TestIcon({test}) {
   const Icon = icons[test];
@@ -53,33 +62,121 @@ function Landing() {
   </>;
 }
 
+function Shape({kind, fill}) {
+  const outline = {fill, stroke: '#222', strokeWidth: 2, strokeLinejoin: 'round'};
+  switch (kind) {
+    case 'circle': return <circle r="17" {...outline}/>;
+    case 'square': return <rect x="-15" y="-15" width="30" height="30" {...outline}/>;
+    case 'diamond': return <polygon points="0,-19 19,0 0,19 -19,0" {...outline}/>;
+    case 'triangle': return <polygon points="0,-19 18,14 -18,14" {...outline}/>;
+    case 'star': return <polygon points="0,-18 5,-5 18,0 5,5 0,18 -5,5 -18,0 -5,-5" {...outline}/>;
+  }
+}
+
 function Figure({figure}) {
-  if (figure.kind === 'arrow') {
-    return <span className="figure-arrow" style={{transform:'rotate('+figure.angle*90+'deg)'}} aria-hidden="true">↑</span>;
+  const blue = '#0082ce';
+  switch (figure.kind) {
+    case 'arrow':
+      return <path d="M0 -19 15 -3 H6 V17 H-6 V-3 H-15 Z" transform={'rotate('+figure.angle*90+')'}
+        fill={blue} stroke="#222" strokeWidth="2" strokeLinejoin="round"/>;
+    case 'dots':
+      return Array.from({length: figure.count}, (_, i) => {
+        const row = Math.floor(i / 2);
+        const rowSize = Math.min(2, figure.count - row * 2);
+        return <circle key={i} cx={(i % 2 - (rowSize - 1) / 2) * 14}
+          cy={(row - (Math.ceil(figure.count / 2) - 1) / 2) * 14}
+          r="4.5" fill={blue} stroke="#222"/>;
+      });
+    case 'corner':
+    case 'tile': {
+      const marked = figure.kind === 'corner' ? [[0,1,3,2][figure.angle]] : figure.cells;
+      return [0,1,2,3].map(i => <rect key={i} x={i % 2 * 16 - 16} y={Math.floor(i / 2) * 16 - 16}
+        width="16" height="16" fill={marked.includes(i) ? blue : 'white'} stroke="#222"/>);
+    }
+    case 'pair':
+      return <>
+        <Shape kind={figure.outer} fill="white"/>
+        <g transform={figure.outer === 'triangle' ? 'translate(0 4) scale(.4)' : 'scale(.4)'}>
+          <Shape kind={figure.inner} fill={blue}/>
+        </g>
+      </>;
+    default:
+      return <Shape kind={figure.kind} fill={figure.outline ? 'white' : blue}/>;
   }
-  if (figure.kind === 'dots') {
-    return <span className="figure-dots" aria-hidden="true">{Array.from({length:figure.count},(_,i)=><i key={i}/>)}</span>;
-  }
-  if (figure.kind === 'corner' || figure.kind === 'tile') {
-    const marked = figure.kind==='corner' ? [[0,1,3,2][figure.angle]] : figure.cells;
-    return <span className="figure-block" aria-hidden="true">{[0,1,2,3].map(i=><i key={i} className={marked.includes(i)?'marked':''}/>)}</span>;
-  }
-  if (figure.kind === 'pair') {
-    return <span className="figure-pair" aria-hidden="true">
-      <i className={'figure-shape shape-'+figure.outer+' outline'}/>
-      <i className={'figure-shape shape-'+figure.inner}/>
-    </span>;
-  }
-  return <span className={'figure-shape shape-'+figure.kind+(figure.outline?' outline':'')} aria-hidden="true"/>;
 }
 
 function Puzzle({puzzle}) {
-  return <div className={'figure-board '+(puzzle.cells.length===9?'figure-matrix':'figure-sequence')} style={{'--cols':puzzle.cols}} aria-label="Puzzle tiles">
-    {puzzle.cells.map((figure,i)=><div className={'figure-cell '+(!figure?'figure-missing':'')} key={i}>
-      <span className="sr-only">{figure?describeFigure(figure):'Missing tile'}</span>
-      {figure?<Figure figure={figure}/>:<span aria-hidden="true">?</span>}
-    </div>)}
-  </div>;
+  const matrix = puzzle.cells.length === 9;
+  const width = matrix ? 280 : 460;
+  const height = matrix ? 252 : 160;
+  const step = width / puzzle.cols;
+  const description = puzzle.cells.map(figure => figure ? describeFigure(figure) : 'Missing tile').join('; ');
+  return <svg className={'figure-board '+(matrix ? 'figure-matrix' : '')} viewBox={'0 0 '+width+' '+height}
+    role="img" aria-label={description}>
+    {matrix && <path d="M94 0v252M186 0v252M0 84h280M0 168h280" stroke="#d4d4d4"/>}
+    {puzzle.cells.map((figure, i) => <g key={i}
+      transform={'translate('+((i % puzzle.cols + .5) * step)+' '+(matrix ? Math.floor(i / puzzle.cols) * 84 + 42 : height / 2)+')'}>
+      {figure ? <Figure figure={figure}/> :
+        <text y="12" textAnchor="middle" fill="#d21b24" fontFamily="Arial, sans-serif" fontSize="38" fontWeight="700">?</text>}
+    </g>)}
+  </svg>;
+}
+
+function MemoryBoard({sequence}) {
+  const items = sequence.trim().split(/\s+/);
+  const spacing = 460 / items.length;
+  return <svg className="figure-board" viewBox="0 0 460 160" role="img"
+    aria-label={items.map(item => memoryShapes[item]?.[1] ?? item).join(', ')}>
+    {items.map((item, i) => <g key={i} transform={'translate('+((i + .5) * spacing)+' 80)'}>
+      {memoryShapes[item]
+        ? <Shape kind={memoryShapes[item][0]} fill={item === '◇' ? 'white' : '#0082ce'}/>
+        : <text className="memory-token" textAnchor="middle" dominantBaseline="central">{item}</text>}
+    </g>)}
+  </svg>;
+}
+
+const iqProfileQuestions = [
+  ['How old are you?', ['Under 20', '20s', '30s', '40s', '50+']],
+  ['What is your education level?', [
+    'Some High School', 'High School Diploma', 'Some College',
+    'Bachelor’s Degree or Trade School', 'Master’s Degree', 'Doctoral / PhD / MD Degree'
+  ]],
+  ['Do you prefer numbers, or words?', ['Words', 'Numbers']],
+  ['Do you like puzzles?', ['Yes', 'Not really', 'No']],
+  ['Do you have trouble focusing?', ['Yes, often', 'Sometimes', 'Almost never']]
+];
+
+function IqPreparation({onStart}) {
+  const [profile, setProfile] = useState([]);
+  const step = profile.length;
+  const question = iqProfileQuestions[step];
+
+  return <section className={'panel '+tests.iq.color}>
+    <a className="back" href="/"><ChevronLeft size={18} aria-hidden="true"/>All tests</a>
+    <div className="quiz-label"><TestIcon test="iq"/>{tests.iq.title}<span>
+      {question ? (step + 1)+' / '+iqProfileQuestions.length : 'Ready to start'}
+    </span></div>
+    <progress aria-label="Introductory questions answered" value={step} max={iqProfileQuestions.length}/>
+    <h1>{question ? question[0] : 'Put your reasoning to the test'}</h1>
+    {question ? <>
+      <p>Your test will be personalized based on the information you provide.</p>
+      <div className="answers" key={step}>{question[1].map((option, index) =>
+        <button type="button" key={option} className="answer" onClick={() => setProfile(current =>
+          current.length === step ? [...current, index] : current
+        )}>{option}</button>
+      )}</div>
+    </> : <>
+      <p>Work through {iq.length} questions, from simple sequences to grids with multiple rules. You can skip a question and return to it before finishing.</p>
+      <p>{profile[2] === 0
+        ? 'Try describing each pattern in a few words before choosing an answer.'
+        : 'Try counting repeated elements or turns when you look for a pattern.'}
+      {profile[4] < 2 && ' If you lose focus on a question, skip it and come back later.'}</p>
+      <button className="button primary next" onClick={onStart}>Start IQ Test</button>
+    </>}
+    {step > 0 && <button type="button" className="button skip-question" onClick={() =>
+      setProfile(current => current.slice(0, -1))
+    }>Back</button>}
+  </section>;
 }
 
 function Quiz({test}) {
@@ -152,17 +249,15 @@ function Quiz({test}) {
       setBusy(false);
     }
   }
-  const [prompt,values,,,puzzle] = list[index] || [];
+  const [prompt,values,category,,puzzle] = list[index] || [];
   const memorizing = test === 'memory' && !reveal;
+  const ScenarioIcon = test === 'mental-age' ? mentalAgeIcons[category] : null;
+  if (!started) return <IqPreparation onStart={() => setStarted(true)}/>;
   return <section className={'panel '+info.color}>
     <a className="back" href="/"><ChevronLeft size={18} aria-hidden="true"/>All tests</a>
     <div className="quiz-label"><TestIcon test={test}/>{info.title}<span>{done ? 'Finished' : (index+1)+' / '+list.length}</span></div>
     <progress aria-label="Questions answered" value={answered} max={list.length}/>
-    {!started ? <>
-      <h1>Put your reasoning to the test</h1>
-      <p>Work through 25 questions, from simple sequences to grids with multiple rules. You can skip a question and return to it before finishing.</p>
-      <button className="button primary next" onClick={()=>setStarted(true)}>Start IQ Test</button>
-    </> : done ? <>
+    {done ? <>
       <h1>Your result is ready.</h1>
       <p>Unlock your score, a breakdown by category, and a downloadable certificate.</p>
       <div className="checkout"><div><strong>$1.00</strong><small>One-time payment · USD</small></div><button className="button primary" onClick={checkout} disabled={busy}>{busy?'Opening checkout…':'Unlock my result'}</button></div>
@@ -171,13 +266,21 @@ function Quiz({test}) {
     </> : <>
       <h1>{memorizing ? 'Remember this' : prompt}</h1>
       {puzzle && <Puzzle puzzle={puzzle}/>}
-      {memorizing ? <div className="memory-display" key={index}>{values[0]}</div> :
-      <div className={'answers '+(puzzle?'figure-answers':'')}>{(test==='memory'?values.slice(1):values).map((value,i)=>
-        <button key={i} className={'answer '+(selected===i?'chosen':'')} aria-pressed={selected===i}
-          aria-label={puzzle?initials[i]+': '+describeFigure(value):undefined} onClick={()=>setSelected(i)}>
-          <span className="answer-letter">{initials[i]}</span>{puzzle?<Figure figure={value}/>:value}
-        </button>
-      )}</div>}
+      {ScenarioIcon && <div className="scenario-figure" aria-hidden="true"><ScenarioIcon size={64} strokeWidth={1.5}/></div>}
+      {memorizing ? <MemoryBoard sequence={values[0]}/> :
+      <div className={'answers '+(puzzle || test === 'memory' ? 'figure-answers' : 'scenario-answers')}>
+        {(test === 'memory' ? values.slice(1) : values).map((value, i) => {
+          const shape = test === 'memory' ? memoryShapes[value] : null;
+          const description = puzzle ? describeFigure(value) : shape?.[1];
+          return <button key={i} className={'answer '+(selected === i ? 'chosen' : '')} aria-pressed={selected === i}
+            aria-label={description ? initials[i]+': '+description : undefined} onClick={() => setSelected(i)}>
+            <span className="answer-letter">{initials[i]}</span>
+            {puzzle || shape ? <svg className="figure-option" viewBox="-24 -24 48 48" aria-hidden="true">
+              {puzzle ? <Figure figure={value}/> : <Shape kind={shape[0]} fill={value === '◇' ? 'white' : '#0082ce'}/>}
+            </svg> : value}
+          </button>;
+        })}
+      </div>}
       <div className="quiz-actions">
         <button className="button primary next" disabled={memorizing || selected===null} onClick={advance}>{answered+1===list.length?'Finish test':'Continue'}</button>
         {isIQ && <button className="button skip-question" disabled={nextUnanswered(answers)===-1} onClick={skip}>Skip for now</button>}

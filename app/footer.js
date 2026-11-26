@@ -7,13 +7,13 @@ export const legalLinks = {
 export function Brand() {
   return <a className="brand" href="/" aria-label="MindTest home">
     <img src="/mindtest-mark.svg" alt="" width="34" height="34"/>
-    MindTest<span className="brand-dot">.</span>
+    MindTest
   </a>;
 }
 
 export default function Footer() {
   return <footer className="shell site-footer">
-    <img className="footer-wordmark" src="/mindtest-wordmark.svg" alt="" width="925" height="142" loading="lazy"/>
+    <img className="footer-wordmark" src="/mindtest-wordmark.svg" alt="" width="825" height="142" loading="lazy"/>
     <div className="footer-panel">
       <div><Brand/><p>© {new Date().getUTCFullYear()} MindTest</p></div>
       <nav className="footer-tests" aria-label="Tests">
