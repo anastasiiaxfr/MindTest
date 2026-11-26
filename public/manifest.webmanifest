@@ -1,0 +1,23 @@
+{
+  "id": "/",
+  "name": "MindTest",
+  "short_name": "MindTest",
+  "description": "Three quick tests for logic, memory, and the way you see the world.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#2c185b",
+  "theme_color": "#2c185b",
+  "icons": [
+    {"src": "/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/pwa/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "screenshots": [
+    {"src": "/pwa/desktop.png", "sizes": "2160x1350", "type": "image/png", "form_factor": "wide", "label": "MindTest hero on desktop"},
+    {"src": "/pwa/desktop-quiz.png", "sizes": "2160x1350", "type": "image/png", "form_factor": "wide", "label": "MindTest IQ test on desktop"},
+    {"src": "/pwa/mobile.png", "sizes": "645x1290", "type": "image/png", "form_factor": "narrow", "label": "MindTest hero on mobile"},
+    {"src": "/pwa/mobile-quiz.png", "sizes": "645x1290", "type": "image/png", "form_factor": "narrow", "label": "MindTest IQ test on mobile"}
+  ]
+}

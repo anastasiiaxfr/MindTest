@@ -6,3 +6,5 @@ CREATE TABLE IF NOT EXISTS mindtest_attempts (
   paid_at timestamptz,
   payment_status text NOT NULL DEFAULT 'Pending'
 );
+
+ALTER TABLE mindtest_attempts ADD COLUMN IF NOT EXISTS last_payment_check_at timestamptz;
