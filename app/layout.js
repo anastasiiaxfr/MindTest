@@ -1,26 +1,11 @@
 import "@fontsource/dosis/latin-600.css";
 import "./style.css";
 
-const title = "MindTest — A little space for your mind";
-const description =
-  "Explore how you think with three playful quizzes in logic, memory and mental age.";
-const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-const image = {
-  url: "/og-image.png",
-  width: 1200,
-  height: 630,
-  alt: "MindTest quizzes with Momo, the lavender brain mascot",
-};
-
-const metadataOrigin = vercelHost ? "https://" + vercelHost : process.env.APP_URL?.trim();
-const metadataBase = metadataOrigin ? new URL(metadataOrigin) : undefined;
-const logoPath = "/pwa/icon-512.png";
-const logoUrl = metadataBase ? new URL(logoPath, metadataBase).href : logoPath;
+import { absoluteUrl, siteOrigin } from "../lib/seo.js";
 
 export const metadata = {
-  metadataBase,
-  title,
-  description,
+  metadataBase: siteOrigin,
+  verification: {google: process.env.GOOGLE_SITE_VERIFICATION?.trim() || undefined},
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -29,15 +14,6 @@ export const metadata = {
     ],
     apple: "/pwa/icon-192.png",
   },
-  openGraph: {
-    title,
-    description,
-    type: "website",
-    siteName: "MindTest",
-    url: "/",
-    images: [image],
-  },
-  twitter: { card: "summary_large_image", title, description, images: [image] },
 };
 
 export const viewport = { themeColor: "#2c185b" };
@@ -46,7 +22,7 @@ export default function Layout({ children }) {
   return (
     <html lang="en">
       <head>
-        <meta property="og:logo" content={logoUrl} />
+        <meta property="og:logo" content={absoluteUrl("/pwa/icon-512.png")} />
       </head>
       <body>{children}</body>
     </html>

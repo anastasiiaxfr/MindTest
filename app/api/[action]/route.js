@@ -5,7 +5,7 @@ import { tests } from '../../../lib/tests.js';
 import { attemptIdPattern as uuid, paymentReturn } from '../../../lib/payment-return.js';
 
 export const dynamic = 'force-dynamic';
-const reply = (body, status = 200) => Response.json(body, {status, headers: {'Cache-Control':'no-store'}});
+const reply = (body, status = 200) => Response.json(body, {status, headers: {'Cache-Control':'no-store', 'X-Robots-Tag':'noindex, nofollow, noarchive'}});
 const secret = () => process.env.WAYFORPAY_MERCHANT_SECRET;
 const merchant = () => process.env.WAYFORPAY_MERCHANT_ACCOUNT;
 const sign = (...fields) => createHmac('md5', secret()).update(fields.map(v => v ?? '').join(';')).digest('hex');

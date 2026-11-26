@@ -30,7 +30,7 @@ function Hero() {
     <div className="shell hero-stage">
       <div className="hero-copy">
         <h1 id="hero-title">Meet your curious mind.</h1>
-        <p>Three quick tests for logic, memory, and the way you see the world.</p>
+        <p>Three quizzes for entertainment, covering logic, memory, and the way you see the world.</p>
         <a className="button hero-cta" href="#tests">Explore the tests</a>
       </div>
       <div className="hero-visual">
@@ -157,7 +157,7 @@ function IqPreparation({onStart}) {
       {question ? (step + 1)+' / '+iqProfileQuestions.length : 'Ready to start'}
     </span></div>
     <progress aria-label="Introductory questions answered" value={step} max={iqProfileQuestions.length}/>
-    <h1>{question ? question[0] : 'Put your reasoning to the test'}</h1>
+    <h1><span className="sr-only">IQ Test: </span>{question ? question[0] : 'Put your reasoning to the test'}</h1>
     {question ? <>
       <p>Your test will be personalized based on the information you provide.</p>
       <div className="answers" key={step}>{question[1].map((option, index) =>
@@ -264,7 +264,7 @@ function Quiz({test}) {
       <p className="methods">WayForPay · Card · Apple Pay · Google Pay</p>
       {error && <p role="alert" className="error">{error}</p>}
     </> : <>
-      <h1>{memorizing ? 'Remember this' : prompt}</h1>
+      <h1><span className="sr-only">{info.title}: </span>{memorizing ? 'Remember this' : prompt}</h1>
       {puzzle && <Puzzle puzzle={puzzle}/>}
       {ScenarioIcon && <div className="scenario-figure" aria-hidden="true"><ScenarioIcon size={64} strokeWidth={1.5}/></div>}
       {memorizing ? <MemoryBoard sequence={values[0]}/> :
@@ -389,17 +389,11 @@ function Result({id}) {
   </section>;
 }
 
-export default function Experience() {
-  const [route,setRoute] = useState(null);
-  useEffect(()=>{
-    const params=new URLSearchParams(location.search);
-    setRoute({test:params.get('test'),result:params.get('result')});
-  },[]);
-  const test=route?.test && Object.hasOwn(tests,route.test) ? route.test:null;
-  const landing = !route?.result && !test;
+export default function Experience({test, result}) {
+  const landing = !result && !test;
   return <>
     <header className={landing?'landing-header':undefined}><div className="shell nav"><Brand/><a className="nav-link" href="/#tests">Tests</a><a className="button nav-button" href="/#tests">Choose a test</a></div></header>
-    <main className={landing?undefined:'shell'}>{route?.result ? <Result id={route.result}/> : test ? <Quiz key={test} test={test}/> : <Landing/>}</main>
+    <main className={landing?undefined:'shell'}>{result ? <Result id={result}/> : test ? <Quiz key={test} test={test}/> : <Landing/>}</main>
     <Footer/>
   </>;
 }

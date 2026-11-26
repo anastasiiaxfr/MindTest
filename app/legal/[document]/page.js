@@ -1,9 +1,11 @@
 import {notFound} from 'next/navigation';
 import Footer, {Brand, legalLinks} from '../../footer.js';
 
+import { legalSeo, privateRobots, publicMetadata } from '../../../lib/seo.js';
+
 const copy = {
   terms: [
-    ['Using MindTest', 'MindTest offers three quizzes for personal exploration. Scores describe your answers to our quizzes. The IQ and Mental Age results are informal and have no clinical or standardized assessment status.'],
+    ['Using MindTest', 'MindTest offers three quizzes for entertainment and personal exploration. Scores describe your answers to our quizzes. These quizzes are not standardized psychological assessments and do not provide clinical or diagnostic results.'],
     ['Purchasing results', 'The result for a single attempt costs $1 USD. WayForPay processes the one-time payment. Your result and downloadable certificate become available after WayForPay confirms payment. Keep the result URL to return to your report.']
   ],
   privacy: [
@@ -21,14 +23,11 @@ export function generateStaticParams() {
   return Object.keys(legalLinks).map(document=>({document}));
 }
 
-export async function generateMetadata({params}, parent) {
-  const {document}=await params;
-  if (!Object.hasOwn(legalLinks,document)) return {title:'MindTest'};
-  const title=legalLinks[document]+' | MindTest';
-  const {openGraph, metadataBase}=await parent;
-  const path='/legal/'+document;
-  const url=metadataBase ? new URL(path,metadataBase) : path;
-  return {title,openGraph:{...openGraph,title,url}};
+export async function generateMetadata({params}) {
+  const {document} = await params;
+  return Object.hasOwn(legalSeo, document)
+    ? publicMetadata(legalSeo[document])
+    : {title: 'Page Not Found | MindTest', robots: privateRobots};
 }
 
 export default async function LegalPage({params}) {

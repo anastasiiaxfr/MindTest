@@ -1,4 +1,10 @@
 import Footer from './footer.js';
+import { privateRobots } from '../lib/seo.js';
+
+export const metadata = {
+  title: 'Page Not Found | MindTest',
+  robots: privateRobots,
+};
 
 export default function NotFoundPage() {
   return <>
